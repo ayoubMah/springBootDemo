@@ -1,0 +1,48 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin' # Or any other distribution you prefer
+
+      - name: Build with Maven
+        run: ./mvnw clean package -DskipTests
+
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          password: ${{ secrets.VM_PASSWORD }}  # Use a key if possible!
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22  # Default SSH port, change if needed
+          script: |
+            cd /home/ayoubroot/ # Or your desired directory
+            mkdir -p spring-app
+            cd spring-app
+            rm -rf * # Clean up old files
+            # Copy the JAR file.  Adjust the path if necessary.
+            scp target/*.jar ayoubroot@${{ secrets.VM_HOST }}:/home/ayoubroot/spring-app/app.jar
+            # Stop any existing instances (using a process ID file)
+            if [ -f app.pid ]; then
+              kill -9 $(cat app.pid)
+              rm app.pid
+            fi
+            # Start the application in the background and save the PID
+            nohup java -jar app.jar > app.log 2>&1 &
+            echo $! > app.pid
+            echo "Application deployed and running."
