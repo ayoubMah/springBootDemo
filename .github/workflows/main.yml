@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'temurin' # Or any other distribution you prefer
+          distribution: 'temurin'
 
       - name: Build with Maven
         run: ./mvnw clean package -DskipTests
@@ -25,24 +25,39 @@ jobs:
       - name: Deploy to VM
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          password: ${{ secrets.VM_PASSWORD }}  # Use a key if possible!
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22  # Default SSH port, change if needed
+          host: 172.31.252.17
+          username: ayoubroot
+          key: |
+            -----BEGIN OPENSSH PRIVATE KEY-----
+            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
+            -----END OPENSSH PRIVATE KEY-----
+          port: 22
           script: |
-            cd /home/ayoubroot/ # Or your desired directory
-            mkdir -p spring-app
-            cd spring-app
-            rm -rf * # Clean up old files
-            # Copy the JAR file.  Adjust the path if necessary.
-            scp target/*.jar ayoubroot@${{ secrets.VM_HOST }}:/home/ayoubroot/spring-app/app.jar
-            # Stop any existing instances (using a process ID file)
-            if [ -f app.pid ]; then
-              kill -9 $(cat app.pid)
-              rm app.pid
-            fi
-            # Start the application in the background and save the PID
-            nohup java -jar app.jar > app.log 2>&1 &
-            echo $! > app.pid
-            echo "Application deployed and running."
+            cd /home/ayoubroot/spring-app
+            rm -rf *
+            scp -o StrictHostKeyChecking=no target/*.jar ayoubroot@172.31.252.17:/home/ayoubroot/spring-app/app.jar
+            sudo systemctl restart helloworld.service
