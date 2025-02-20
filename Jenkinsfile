@@ -4,7 +4,7 @@ pipeline {
     environment {
         DEPLOY_USER = 'ayoubroot'
         DEPLOY_HOST = '172.31.252.17'
-        DEPLOY_PATH = '/home/ayoubroot/spring-app'
+        DEPLOY_PATH = 'spring-app'
         JAR_PATH = 'target/*.jar' // May need adjustment
     }
 
@@ -45,5 +45,7 @@ pipeline {
                 )
             }
         }
+        triggers {
+                githubPush()
     }
 }
