@@ -15,7 +15,7 @@ public class HelloController {
 
     @GetMapping("/")
     public String hi(){
-        return "Hello world it's ayoub" ;
+        return "Hello world it's ayoub, from the backend" ;
     }
 
 }
